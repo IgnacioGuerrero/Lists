@@ -2,15 +2,15 @@
 CC=gcc
 CFLAGS = -Wall -g
 #DEPS = some.h
-OBJ = LinkedList0.o 
+OBJ = LinkedList.o 
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-LinkedList0: $(OBJ)
+LinkedList: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
-	rm LinkedList0
-#LinkedList0: LinkedList0.c
-#	gcc -o LinkedList0 LinkedList0.c
+	rm LinkedList
+#LinkedList: LinkedList.c
+#	gcc -Wall -o LinkedList LinkedList.c

@@ -1,37 +1,59 @@
 /* Operating and maintaing a list */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-struct listNode { /* self-referencing structure */
+typedef struct _book {
+  char title[200];
+  struct _book *next;
+  int Maci;
+
+} Book;
+
+typedef Book *BookPtr;
+
+typedef struct _shelf { /* self-referencing structure */
   char data;
-  struct listNode *nextPtr;
-};
+  char name[100];
+  int numBooks;
+  struct _shelf *nextPtr;
+  BookPtr placedBook; 
+} Shelf;
 
-typedef struct listNode LISTNODE;
-typedef LISTNODE *LISTNODEPTR;
+//typedef struct _shelf Shelf;
+typedef Shelf *ShelfPtr;
 
-void insert(LISTNODEPTR *, char);
-char delete(LISTNODEPTR *, char);
-int isEmpty(LISTNODEPTR);
-void printList(LISTNODEPTR);
+void insert(ShelfPtr *, char, char*, int, BookPtr *);
+char delete(ShelfPtr *, char, char*, int, BookPtr *);
+int isEmpty(ShelfPtr);
+void printList(ShelfPtr);
 void instructions(void);
 
 int main(void) {
-  LISTNODEPTR startPtr = NULL;
+  ShelfPtr startPtr = NULL;
+  BookPtr firstPtr = NULL;
   int choice;
   char item;
+  char nameOfShelf[100];
+  int number;
 
   instructions(); /* display the menu */
   printf("? ");
   scanf("%d", &choice);
 
-  while (choice != 3) {
+  while (choice != 4) {
     switch (choice)
     {
       case 1:
+        printf("Enter a new shelf: ");
         printf("Enter a character: ");
         scanf("\n%c", &item);
-        insert(&startPtr, item);
+        printf("Enter a name: ");
+        scanf("\n%s", nameOfShelf);
+        //scanf("%[^\n]%*c", nameOfShelf); 
+        printf("Enter number of books on the self: ");
+        scanf("\n%d", &number);
+        insert(&startPtr, item, nameOfShelf, number, &firstPtr);
         printList(startPtr);
         break;
       case 2:
@@ -39,7 +61,7 @@ int main(void) {
           printf("Enter character to be deleted: ");
           scanf("\n%c", &item);
 
-          if (delete(&startPtr, item)) {
+          if (delete(&startPtr, item, nameOfShelf, number, &firstPtr)) {
             printf("%c deleted. \n", item);
             printList(startPtr);
           } else {
@@ -48,6 +70,9 @@ int main(void) {
         } else {
           printf("List is empty.\n\n");
         }
+        break;
+      case 3:
+        printList(startPtr);
         break;
       default:
         printf("Invalid choice.\n\n");
@@ -65,20 +90,24 @@ int main(void) {
 /* Print the instructions */
 void instructions(void) {
   printf("Enter your choice:\n"
-         "    1 to insert an element into the list.\n"
-         "    2 to delete an element into the list.\n"
-         "    3 to end.\n"
+         "    1 to insert a shelf into the list.\n"
+         "    2 to delete a shelf into the list.\n"
+         "    3 to print the list.\n"
+         "    4 to end.\n"
          "? ");
 }
 
-/* Insert a new value into the list in sorted order */
-void insert(LISTNODEPTR *sPtr, char value) {
-  LISTNODEPTR newPtr, previousPtr, currentPtr;
+/* Insert a new _shelf into the list in sorted order */
+void insert(ShelfPtr *sPtr, char value, char* nameOfShelf, int number, BookPtr *fPtr) {
+  ShelfPtr newPtr, previousPtr, currentPtr;
 
-  newPtr = malloc(sizeof(LISTNODE));
+  newPtr = malloc(sizeof(Shelf));
 
   if (newPtr != NULL) { /* is space available */
     newPtr->data = value;
+    strcpy(newPtr->name,nameOfShelf);
+    newPtr->numBooks = number;
+    newPtr->placedBook = *fPtr;
     newPtr->nextPtr = NULL;
 
     previousPtr = NULL;
@@ -86,7 +115,7 @@ void insert(LISTNODEPTR *sPtr, char value) {
 
     while(currentPtr != NULL && value > currentPtr->data ){
       previousPtr = currentPtr;         /* walk to ...   */
-      currentPtr = currentPtr->nextPtr; /* ... next node */
+      currentPtr = currentPtr->nextPtr; /* ... next _shelf */
     }
 
     if (previousPtr == NULL) {
@@ -102,8 +131,8 @@ void insert(LISTNODEPTR *sPtr, char value) {
 }
 
 /* Delete a list element */
-char delete(LISTNODEPTR *sPtr, char value) {
-  LISTNODEPTR previousPtr, currentPtr, tempPtr;
+char delete(ShelfPtr *sPtr, char value, char* nameOfShelf, int number, BookPtr *fPtr) {
+  ShelfPtr previousPtr, currentPtr, tempPtr;
 
   if (value == (*sPtr)->data) {
     tempPtr = *sPtr;
@@ -116,7 +145,7 @@ char delete(LISTNODEPTR *sPtr, char value) {
 
     while (currentPtr != NULL && currentPtr->data != value) {
       previousPtr = currentPtr;         /* walk to ...   */
-      currentPtr = currentPtr->nextPtr; /* ... next node */
+      currentPtr = currentPtr->nextPtr; /* ... next _shelf */
     }
 
     if (currentPtr != NULL) {
@@ -127,24 +156,32 @@ char delete(LISTNODEPTR *sPtr, char value) {
     }
   }
 
+  if (fPtr != NULL) {
+    free(fPtr);
+  }
+
   return '\0';
 }
 
 /* Return 1 if the list is empty, 0 otherwise */
-int isEmpty(LISTNODEPTR sPtr)
+int isEmpty(ShelfPtr sPtr)
 {
   return sPtr == NULL;
 }
 
 /* Print the list */
-void printList(LISTNODEPTR currentPtr) {
+void printList(ShelfPtr currentPtr) {
   if (currentPtr == NULL) {
     printf("List is empty.\n\n");
   } else {
     printf("The list is:\n");
 
     while (currentPtr != NULL) {
-      printf("%c ---> ", currentPtr->data);
+      printf("%c: ", currentPtr->data);
+      printf("%s, ", currentPtr->name);
+      printf("%d, ", currentPtr->numBooks);
+      printf("%p,", currentPtr->placedBook);
+      printf(" ---> ");
       currentPtr = currentPtr->nextPtr;
     }
 
